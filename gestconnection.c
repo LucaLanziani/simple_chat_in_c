@@ -20,8 +20,8 @@
 
 #include "gestconnection.h"
 
-/* inizializzo la lista delle connessioni e
-   il mutex associata ad essa 
+/* 
+    Initializes the connections list and the mutex 
  */
 void init_connections_list(connections_p connection_list) {
     connection_list->head = NULL;
@@ -29,9 +29,9 @@ void init_connections_list(connections_p connection_list) {
     pthread_mutex_init(&(connection_list->l_mutex), NULL);
 }
 
-/* crea un nuovo item connection contenente
-   le informazioni sul nuovo utente e sulla socket associata.
-   inizializzo anche il mutex relativo alla connessione
+/* 
+    Creates a new item connection that contains the informations of the new user
+    and the relative socket.
  */
 connection_p new_connection(user_info_p userinfo, sock_info_p sockinfo) {
     connection_p connection;
@@ -45,14 +45,13 @@ connection_p new_connection(user_info_p userinfo, sock_info_p sockinfo) {
 
 }
 
-/* creo un nuovo item user con le informazioni sull'utente collegatosi */
+/* Create a new user item with the user information */
 user_info_p new_user(char *nick, int state) {
     user_info_p user;
     user = (user_info_p) malloc(sizeof (user_info_t));
     user->state = state;
     memset(user->nick, '\0', USERNAMELEN);
     strncpy(user->nick, nick, strlen(nick));
-    printf("CREAZIONE UTENTE -> IL NOME MEMORIZZATO E %s\n", user->nick);
     return user;
 }
 
@@ -66,11 +65,8 @@ sock_info_p new_sock_info(int sd, thread_arg_p arg) {
 
 int add_connection(connections_p connection_list, connection_p connection1) {
     connection_p connection2;
-    /*add on the structure*/
-    //controllo che le connessioni non siano in chiusura
 
     if (connection_list->head == NULL) { /* is empty */
-
         connection1->next = NULL;
         connection1->prev = NULL;
         connection_list->head = connection1;
@@ -89,9 +85,9 @@ int add_connection(connections_p connection_list, connection_p connection1) {
 
 int close_connection(connections_p connection_list, connection_p connection) {
     if (connection->prev == NULL) {
-        //The first element
+        // The first element
         if (connection->next == NULL) {
-            //the only elemetn
+            // The only elemetn
             pthread_mutex_lock(&connection->m_connection);
             connection_list->head = NULL;
             connection_list->tail = NULL;
@@ -108,11 +104,11 @@ int close_connection(connections_p connection_list, connection_p connection) {
         }
     } else {
         while (pthread_mutex_trylock(&connection->prev->m_connection) > 0)
-
-            pthread_mutex_lock(&connection->m_connection);
+            
+        pthread_mutex_lock(&connection->m_connection);
 
         if (connection->next == NULL) {
-            //last element
+            // Last element
             connection->prev->next = connection->next;
             connection_list->tail = connection->prev;
         } else {
@@ -134,7 +130,7 @@ int close_connection(connections_p connection_list, connection_p connection) {
 void close_connections(connections_p connection_list) {
     connection_p connection;
     while (pthread_mutex_trylock(&connection_list->l_mutex) > 0) {
-        printf("Tento il lock del mutex della lista\n");
+        printf("Trying to get the list mutex\n");
         fflush(stdout);
     }
 

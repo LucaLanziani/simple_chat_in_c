@@ -51,22 +51,11 @@ int main(int argc, char *argv[]) {
         }
     }
 
-
-
-    /* create a thread for the client*/
     if (0 != pthread_create(&listener, NULL, (void*) & laucher, NULL)) {
         printf(_("Error on pthread_create\n"));
     }
-    if (pthread_detach(listener) != 0) {
-        printf(_("Error on pthread_detach\n"));
-    }
-
-    while (1) {
-        /*printf("console\n");
-          sleep(2);
-          shared=(!shared);
-         */
-    }
+    
+    pthread_join(listener, NULL);
     return EXIT_SUCCESS;
 }
 

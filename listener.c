@@ -12,7 +12,7 @@ void laucher(void *test) {
         pthread_exit(0);
     }
 
-    //inizializzo la lista delle connessioni
+    //Initialize the connection list
     connections_p connection_list = (connections_p) calloc(1, sizeof (connections_t));
     init_connections_list(connection_list);
 
@@ -20,8 +20,6 @@ void laucher(void *test) {
         pthread_t thread;
         arg = (thread_arg_p) malloc(sizeof (thread_arg));
         arg->connection_list = connection_list;
-
-        printf("LA SHARED E' %d\n", shared);
 
         if ((arg->dialog_socket_id = accept(listen_socket_id, (struct sockaddr *) & arg->dialog_socket, (socklen_t *) & arg->dialog_socket_len)) < 0) {
             printf(_("Server %d: Error %s on accept\n"), getpid(), strerror(errno));
