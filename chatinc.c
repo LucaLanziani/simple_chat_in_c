@@ -54,27 +54,19 @@ int main(int argc, char *argv[]) {
 
 
     /* create a thread for the client*/
-    if (0 != pthread_create(&listener, NULL, (void*) & laucher, NULL)) {
+    if (0 != pthread_create(&listener, NULL, (void*) &laucher, (void *) &port)) {
         printf(_("Error on pthread_create\n"));
     }
-    if (pthread_detach(listener) != 0) {
-        printf(_("Error on pthread_detach\n"));
-    }
 
-    while (1) {
-        /*printf("console\n");
-          sleep(2);
-          shared=(!shared);
-         */
-    }
+    pthread_join(listener, NULL);
     return EXIT_SUCCESS;
 }
 
 void print_help(char *name) {
     printf(_("Usage: %s [OPTION]\n"), name);
-    printf(_("Create a server for a chat\n"));
+    printf(_("Create a server for a chat\n\n"));
     printf(_("Option List:\n"));
-    printf(_("	p NUM: set a NUM port instead of default\n"));
+    printf(_("    p NUM: set a NUM port instead of default\n"));
     printf(_("without any port specified it will listen on port %d\n"), PORT);
     exit(EXIT_FAILURE);
 }

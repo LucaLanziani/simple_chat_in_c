@@ -36,20 +36,20 @@
 #endif
 
 #ifndef UTIL_H
-#define UTIL_H
-typedef char message_t[MESSAGELEN];
-typedef char username_t[USERNAMELEN];
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#include <signal.h>
-#include <pthread.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-int shared;
-int  listen_socket_id;
+    #define UTIL_H
+    typedef char message_t[MESSAGELEN];
+    typedef char username_t[USERNAMELEN];
+    #include <sys/socket.h>
+    #include <sys/types.h>
+    #include <netinet/in.h>
+    #include <netdb.h>
+    #include <unistd.h>
+    #include <signal.h>
+    #include <pthread.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    #include <errno.h>
+    int shared;
+    int  listen_socket_id;
 #endif

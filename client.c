@@ -14,42 +14,60 @@ void close_connection(int sock) {
     exit(0);
 }
 
-int setusername(int sock, char *nick) {
-    char input[20];
-    char result[256];
-    strncpy(input, nick, 19);
-    if (send(sock, input, strlen(input), 0) <= 0) {
-        fprintf(stderr, "error %s durante la write\n", strerror(errno));
+void sock_send(int sock, char msg[USERNAMELEN]) {
+    if (send(sock, msg, strlen(msg), 0) <=0) {
+        fprintf(stderr, "Error %s during write\n", strerror(errno));
         close(sock);
         exit(0);
     }
-    memset(result, '\0', 256);
+}
+
+void sock_recv(sock,)
+
+int setusername(int sock, char *nick) {
+    char username[USERNAMELEN];
+    char result[256];
+    memset(username, '\0', USERNAMELEN);
+    memset(result, '\0', 256);    
+    
+    
+    strncpy(username, nick, USERNAMELEN-1);
+    sock_send(sock, username)
+
     if (recv(sock, result, 255, 0) <= 0) {
-        fprintf(stderr, "error %s durante la read\n", strerror(errno));
+        fprintf(stderr, "Error %s during read\n", strerror(errno));
         fflush(stdout);
         close(sock);
         exit(0);
     }
     while (atoi(result) != 100) {
-        printf("Inserisci il nick: ");
+        printf("%s\n",result);
+        printf("Please insert the nickname: ");
         fflush(stdout);
-        memset(input, '\0', 20);
-        fgets(input, 19, stdin);
+        memset(username, '\0', USERNAMELEN);
+        fgets(username, USERNAMELEN-1, stdin);
         fflush(stdin);
-        printf("Mando il nick: %s", input);
-        if (send(sock, input, strlen(input), 0) <= 0) {
-            fprintf(stderr, "error %s durante la write\n", strerror(errno));
+        if (send(sock, username, strlen(username), 0) <= 0) {
+            fprintf(stderr, "Error %s during write\n", strerror(errno));
             close(sock);
             exit(0);
         }
-        memset(result, '\0', 256);
-        if (recv(sock, result, 255, 0) <= 0) {
-            fprintf(stderr, "error %s durante la read\n", strerror(errno));
+        memset(result, '\0', MESSAGELEN);
+        if (recv(sock, result, sizeof(result)-1, 0) <= 0) {
+            fprintf(stderr, "Error %s during read\n", strerror(errno));
             fflush(stdout);
             close(sock);
             exit(0);
         }
     }
+    memset(result, '\0', 256);
+    if (recv(sock, result, 255, 0) <= 0) {
+        fprintf(stderr, "Error %s during read\n", strerror(errno));
+        fflush(stdout);
+        close(sock);
+        exit(0);
+    }
+    printf("%s\n", result);
     return 0;
 
 }
@@ -59,7 +77,7 @@ void ReadingProcess(int sock, int pid) {
     while (1) {
         memset(result, '\0', MESSAGELEN);
         if (recv(sock, result, sizeof (result) - 1, 0) <= 0) {
-            fprintf(stderr, "error %s durante la read\n", strerror(errno));
+            fprintf(stderr, "Error %s during read\n", strerror(errno));
             fflush(stdout);
             if (pid != 0) {
                 //printf("Sto per uccidere il processo con PID %d\n",pid);
@@ -69,8 +87,6 @@ void ReadingProcess(int sock, int pid) {
         }
         printf("%s", result);
         fflush(stdout);
-        sleep(1);
-
     }
 }
 
@@ -87,20 +103,19 @@ void WritingProcess(int sock) {
         }
 
         if (strncmp(EXITSTRING, input, strlen(EXITSTRING)) == 0) {
-            printf("Termino il client");
+            printf("Terminating");
             return;
         }
 
         if (send(sock, input, strlen(input), 0) <= 0) {
-            fprintf(stderr, "error %s durante la write\n", strerror(errno));
+            fprintf(stderr, "Error %s during write\n", strerror(errno));
         }
         i++;
-        sleep(1);
     }
 }
 
 main(int argc, char** argv) {
-    char nick[20];
+    char nick[USERNAMELEN];
 
     //signal(SIGPIPE,SIG_IGN);
     signal(SIGINT, close_connection);
@@ -115,20 +130,20 @@ main(int argc, char** argv) {
 
 
     if (argc != 4) {
-        printf("uso: %s <Nick> <host> <numero-della-porta>\n", argv[0]);
+        printf("use: %s <Nick> <host> <port>\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
     hp = gethostbyname(argv[2]);
     if (hp == NULL) {
-        fprintf(stderr, "%s: l'host %s e' sconosciuto.\n", argv[0], argv[2]);
+        fprintf(stderr, "%s: %s unknown host.\n", argv[0], argv[2]);
         exit(EXIT_FAILURE);
     }
 
 
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
-        fprintf(stderr, "client: errore %s nella creazione della socket\n", strerror(errno));
+        fprintf(stderr, "error  %s on socket creation\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -139,15 +154,15 @@ main(int argc, char** argv) {
 
     /* connessione */
     if (connect(sock, (struct sockaddr *) & server, sizeof (server)) < 0) {
-        fprintf(stderr, "client: errore %s durante la connessione\n", strerror(errno));
+        fprintf(stderr, "error %s on connection\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    strncpy(nick, argv[1], 19);
+    strncpy(nick, argv[1], USERNAMELEN-1);
     if (setusername(sock, nick) == 0) {
         pid = fork();
         if (pid == -1) {
-            fprintf(stderr, "fork fallita\n");
+            fprintf(stderr, "fork failed\n");
             exit(1);
         }
         if (pid == 0) {
@@ -164,6 +179,6 @@ main(int argc, char** argv) {
     }
 
     close(sock);
-    printf("client: ho chiuso la socket\n");
+    printf("socket closed\n");
     exit(0);
 }

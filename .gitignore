@@ -1,0 +1,4 @@
+*.o
+*~
+chat_client
+chat_server

@@ -36,9 +36,10 @@ connection_p login(thread_arg_p arg) {
         if (i == 0) {
             pthread_exit(0);
         }
-        if (i <= 3)
-            sendmessage(arg->dialog_socket_id, "Il nick deve essere di almeno 3 caratteri :");
-    } while (i <= 3);
+        if (i < 3) {
+            sendmessage(arg->dialog_socket_id, "Nick name lenght should be at least 3");
+        }
+    } while (i < 3);
     sendmessage(arg->dialog_socket_id, "100");
 
     arg->thread_id = pthread_self();
@@ -72,8 +73,8 @@ void get_connection(thread_arg_p arg, connection_p connection) {
 void login_message(connections_p connection_list, connection_p connection) {
     message_t loginmess, message;
     memset(loginmess, '\0', sizeof (loginmess));
-    snprintf(message, MESSAGELEN, "%s> %s", connection->user->nick, " ha effettuato il login\n");
-    snprintf(loginmess, MESSAGELEN, "%s> %s", connection->user->nick, " ha effettuato il login");
+    snprintf(message, MESSAGELEN, "%s> %s", connection->user->nick, " logged in\n");
+    snprintf(loginmess, MESSAGELEN, "%s> %s", connection->user->nick, " logged in");
     printf(_("%s\n"), loginmess);
     sendmessage_all(connection_list, connection, message);
 }
@@ -83,8 +84,8 @@ void logout_message(connections_p connection_list, connection_p connection) {
     memset(logoutmess, '\0', sizeof (logoutmess));
     snprintf(logoutmess, sizeof (logoutmess), "%s", connection->user->nick);
 
-    snprintf(message, MESSAGELEN, "%s> %s", connection->user->nick, " ha effettuato il logout\n");
-    snprintf(logoutmess, MESSAGELEN, "%s> %s", connection->user->nick, " ha effettuato il logout");
+    snprintf(message, MESSAGELEN, "%s> %s", connection->user->nick, " logged out\n");
+    snprintf(logoutmess, MESSAGELEN, "%s> %s", connection->user->nick, " logged out");
     printf(_("%s\n"), logoutmess);
     sendmessage_all(connection_list, connection, message);
 }
@@ -100,20 +101,19 @@ void sendmessage_all(connections_p connection_list, connection_p connection, cha
     connection_p connection_prec;
     connection_acc = connection_list->head;
     connection_prec = NULL;
+    /* Iterate on connections */
     while (connection_acc != NULL) {
-        /* blocco il mutex relativo alla connessione a cui sto mandando il messaggio*/
+        printf("Sending message to %s\n", connection_acc->user->nick);
+        /* locking the mutex of the current connection */
         pthread_mutex_lock(&connection_acc->m_connection);
-        /* se esiste una connessione precedente a cui ho 
-         * già mandato il messaggio allora sblocco il suo mutex
-         */
+        /* unlocking the mutex of previous connection */
         if (connection_prec != NULL) {
             pthread_mutex_unlock(&connection_prec->m_connection);
         }
-        /* mando il messaggio sulla connessione attualmente bloccata */
+        /* send message on current connection */
         send(connection_acc->sock->socket_id, message, strlen(message), 0);
-        /* mi ricordo la connessione a cui ho mandato il messaggio */
         connection_prec = connection_acc;
-        /* passo alla prossima connessione */
+        /* next connection */
         connection_acc = connection_acc->next;
     }
     if (connection_prec != NULL) {

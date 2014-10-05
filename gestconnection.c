@@ -52,7 +52,6 @@ user_info_p new_user(char *nick, int state) {
     user->state = state;
     memset(user->nick, '\0', USERNAMELEN);
     strncpy(user->nick, nick, strlen(nick));
-    printf("CREAZIONE UTENTE -> IL NOME MEMORIZZATO E %s\n", user->nick);
     return user;
 }
 
@@ -134,7 +133,6 @@ int close_connection(connections_p connection_list, connection_p connection) {
 void close_connections(connections_p connection_list) {
     connection_p connection;
     while (pthread_mutex_trylock(&connection_list->l_mutex) > 0) {
-        printf("Tento il lock del mutex della lista\n");
         fflush(stdout);
     }
 
